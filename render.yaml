@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: thu-nar-sin-yar-tts
+    runtime: docker
+    plan: free
+    envVars:
+      - key: SITE_PASSWORD
+        sync: false
