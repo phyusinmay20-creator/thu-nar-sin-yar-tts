@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="my"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>သူနားဆင်ရာ — Voiceover Studio</title>
+<style>
+body{font-family:system-ui,sans-serif;max-width:760px;margin:0 auto;padding:16px;background:#14161c;color:#e8eaf0}
+h1{font-size:22px} textarea{width:100%;height:300px;background:#1d2027;color:#e8eaf0;border:1px solid #333;border-radius:8px;padding:10px;font-size:16px;line-height:1.7}
+.row{margin:12px 0;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+select,input[type=password]{background:#1d2027;color:#e8eaf0;border:1px solid #333;border-radius:6px;padding:8px;font-size:15px}
+button{background:#c9372c;color:#fff;border:0;border-radius:8px;padding:12px 22px;font-size:16px;cursor:pointer}
+button:disabled{opacity:.5} #status{color:#f0b429;min-height:24px}
+audio{width:100%;margin-top:12px} a.dl{color:#6cb2f5}
+.small{color:#9aa0ae;font-size:13px}
+</style></head><body>
+<h1>🎙️ သူနားဆင်ရာ — Voiceover Studio</h1>
+<p class="small">ဇာတ်လမ်း စာသား ထည့်ပါ → အသံ ရွေးပါ → Generate နှိပ်ပါ။ စာရှည်ရင် အပိုင်းခွဲပြီး တစ်ဖိုင်တည်း ဆက်ပေးမယ်။ (အများဆုံး စာလုံး ၆၀,၀၀၀ / တစ်ကြိမ်)</p>
+<textarea id="text" placeholder="ဒီမှာ ဇာတ်လမ်း စာသား ထည့်ပါ..."></textarea>
+<div class="row"><span id="count">0 လုံး</span></div>
+<div class="row">
+  <label>အသံ:
+    <select id="voice">
+      <option value="thiha">Thiha (အမျိုးသား)</option>
+      <option value="nilar">Nilar (အမျိုးသမီး)</option>
+    </select></label>
+  <label>အရှိန်:
+    <select id="rate">
+      <option value="-10">နှေးနှေး (-10%)</option>
+      <option value="0" selected>ပုံမှန်</option>
+      <option value="10">နည်းနည်း မြန် (+10%)</option>
+      <option value="20">မြန် (+20%)</option>
+    </select></label>
+  <label>Password: <input type="password" id="pw" size="10"></label>
+</div>
+<button id="go">🎧 Generate Voiceover</button>
+<div id="status"></div>
+<div id="result"></div>
+<script>
+const t=document.getElementById('text');
+t.addEventListener('input',()=>document.getElementById('count').textContent=t.value.length+' လုံး');
+document.getElementById('go').onclick=async()=>{
+  const btn=document.getElementById('go'),st=document.getElementById('status'),rs=document.getElementById('result');
+  if(!t.value.trim()){st.textContent='စာသား အရင် ထည့်ပါ';return}
+  btn.disabled=true;st.textContent='ထုတ်နေတယ်... စာရှည်ရင် ခဏ စောင့်ပါ ⏳';rs.innerHTML='';
+  try{
+    const r=await fetch('/api/tts',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({text:t.value,voice:document.getElementById('voice').value,
+        rate:parseInt(document.getElementById('rate').value),password:document.getElementById('pw').value})});
+    if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.detail||('HTTP '+r.status))}
+    const blob=await r.blob();const url=URL.createObjectURL(blob);
+    rs.innerHTML='<audio controls src="'+url+'"></audio><p><a class="dl" href="'+url+'" download="voiceover.mp3">⬇️ MP3 ဒေါင်းရန်</a></p>';
+    st.textContent='ရပြီ ✅';
+  }catch(e){st.textContent='မအောင်မြင်ဘူး: '+e.message}
+  btn.disabled=false;
+};
+</script></body></html>
